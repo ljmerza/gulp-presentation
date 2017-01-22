@@ -5,6 +5,8 @@ var autoprefixer = require('gulp-autoprefixer'); // browser prefixer adding
 var cssnano = require('gulp-cssnano'); // minify css
 var plumber = require('gulp-plumber'); // error hiding
 var concat = require('gulp-concat'); // merge files to make one
+var sass = require('gulp-sass') // import sass compiler
+var merge = require('merge-stream'); // merge streams
  
 
 // Browser-sync task
@@ -27,21 +29,23 @@ gulp.task('html', function() {
 // css tasks
 gulp.task('css', function() {
 	var cssStream = gulp.src('./src/styles/css/*.css'); // get all css files
+	var sassStream = gulp.src('./src/styles/sass/*.sass') // get all sass files
+		.pipe(sass().on('error', sass.logError)); 	// to combine sass and css we need to convert sass to css first
 
-    return cssStream
-    .pipe(plumber()) // hide errors
-    .pipe(concat('style.css')) // put them all together in one file called s // add browser prefixestyle.css
-    .pipe(autoprefixer('last 2 versions')) // add browser prefixes
-    .pipe(cssnano()) // minify file
-    .pipe(gulp.dest('./dist/')) // add to dist folder
-    .pipe(browserSync.reload({stream:true})); // reload browser
+    return merge(sassStream, cssStream)
+    	.pipe(plumber()) // hide errors
+    	.pipe(concat('style.css')) // put them all together in one file called s // add browser prefixestyle.css
+    	.pipe(autoprefixer('last 2 versions')) // add browser prefixes
+    	.pipe(cssnano()) // minify file
+    	.pipe(gulp.dest('./dist/')) // add to dist folder
+    	.pipe(browserSync.reload({stream:true})); // reload browser
 
 });
 
 
 // Watch tasks
 gulp.watch('./src/*.html', ['html']); // watch all html files in this folder - changes trigger html task
-gulp.watch('./src/styles/css/*.css', ['css']); // watch all css files in this folder - changes trigger css task
+gulp.watch('./src/styles/**/*.*', ['css']); // watch all files in all folders this folder - changes trigger css task
 
 
 // task to run on start up - run each task then run browser synv
