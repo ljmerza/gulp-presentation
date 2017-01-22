@@ -1,0 +1,20 @@
+{
+  "name": "gulp-presentation",
+  "description": "gulp presentation",
+  "main": "index.js",
+  "authors": [
+    "Leonardo Merza <ljmerza@gmail.com>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/ljmerza/gulp-presentation",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "jquery": "^3.1.1"
+  }
+}
