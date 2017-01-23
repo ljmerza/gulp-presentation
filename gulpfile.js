@@ -9,6 +9,8 @@ var sass = require('gulp-sass') // import sass compiler
 var merge = require('merge-stream'); // merge streams
 var sourcemaps = require('gulp-sourcemaps'); // generate source maps of sass
 var notify = require('gulp-notify'); // notification messages
+var uglify = require('gulp-uglify'); // minify js
+var babel = require('gulp-babel'); // js complier
  
 
 // Browser-sync task
@@ -47,6 +49,28 @@ gulp.task('css', function() {
     	.pipe(notify({ message: 'css build done' }));
 
 });
+
+
+//Javascript tasks
+gulp.task('javascript', function() {
+    return gulp.src([
+        './bower_components/jquery/dist/jquery.min.js',
+        './src/scripts/*.js'
+        ])
+    .pipe(plumber())
+    .pipe(sourcemaps.init())
+    .pipe(babel({
+        presets: ['es2015'],
+        plugins: ['transform-runtime']
+    }))
+    .pipe(concat('script.js'))
+    .pipe(uglify())
+    .pipe(sourcemaps.write('./dist/'))
+    .pipe(gulp.dest('./dist/'))
+    .pipe(browserSync.reload({stream:true}))
+    .pipe(notify({ message: 'javascript build done' }))
+});
+
 
 
 // Watch tasks
