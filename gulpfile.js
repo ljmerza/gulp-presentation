@@ -34,9 +34,11 @@ gulp.task('css', function() {
 
     return merge(sassStream, cssStream)
     	.pipe(plumber()) // hide errors
+    	.pipe(sourcemaps.init()) // start source maps
     	.pipe(concat('style.css')) // put them all together in one file called s // add browser prefixestyle.css
     	.pipe(autoprefixer('last 2 versions')) // add browser prefixes
     	.pipe(cssnano()) // minify file
+    	.pipe(sourcemaps.write('./dist/')) // generate source maps
     	.pipe(gulp.dest('./dist/')) // add to dist folder
     	.pipe(browserSync.reload({stream:true})); // reload browser
 
