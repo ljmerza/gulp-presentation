@@ -30,23 +30,23 @@ gulp.task('html', function() {
 	var target = gulp.src('./src/*.html') // get all html files
 
 	return target
-	// .pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")})) // capture errors
+	.pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")})) // capture errors
 
     .pipe(inject(sources, {ignorePath: 'dist/'})) // inject css/js files into html - drop dist/ path from links
     .pipe(gulp.dest('./dist')) // move then to dist folder
     .pipe(browserSync.reload({stream: true})) // reload browser
-    .pipe(notify({ message: 'html build done' }));
+    .pipe(notify({ message: 'HTML build done.', onLast: true })); // notify me only on the last stream
 });
 
 // css tasks
 gulp.task('css', function() {
 	var cssStream = gulp.src('./src/styles/css/**/*.css'); // get all css files
 	var sassStream = gulp.src('./src/styles/sass/**/*.sass') // get all sass files
-		// .pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")})) // capture errors
+		.pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")})) // capture errors
 		.pipe(sass().on('error', sass.logError)); 	// to combine sass and css we need to convert sass to css first
 
     return merge(sassStream, cssStream)
-    	// .pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")})) // capture errors
+    	.pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")})) // capture errors
     	.pipe(sourcemaps.init()) // start source maps
     	.pipe(concat('style.css')) // put them all together in one file called s // add browser prefixestyle.css
     	.pipe(autoprefixer('last 2 versions')) // add browser prefixes
@@ -54,7 +54,7 @@ gulp.task('css', function() {
     	.pipe(sourcemaps.write('./')) // generate source maps
     	.pipe(gulp.dest('./dist')) // add to dist folder
     	.pipe(browserSync.reload({stream:true})) // reload browser
-    	.pipe(notify({ message: 'CSS build done.' }));
+    	.pipe(notify({ message: 'CSS build done.', onLast: true })); // notify me only on the last stream
 
 });
 
@@ -64,17 +64,17 @@ gulp.task('javascript', function() {
         './bower_components/jquery/dist/jquery.min.js',
         './src/scripts/**/*.js'
         ])
-    // .pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")}))  // capture errors
-    .pipe(sourcemaps.init())
+    .pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")}))  // capture errors
+    .pipe(sourcemaps.init()) // start source maps
     .pipe(babel({
         presets: ['es2015']
-    }))
-    .pipe(concat('script.js'))
-    .pipe(uglify())
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest('./dist'))
-    .pipe(browserSync.reload({stream:true}))
-    .pipe(notify({ message: 'Javascript build done.' }));
+    })) // babel conversion and error checking
+    .pipe(concat('script.js')) // conact all files int one file
+    .pipe(uglify()) // minify js
+    .pipe(sourcemaps.write('./')) // generate source maps
+    .pipe(gulp.dest('./dist')) // add to dist folder
+    .pipe(browserSync.reload({stream:true})) // reload browser
+    .pipe(notify({ message: 'JavaScript build done.', onLast: true })); // notify me only on the last stream
 });
 
 
@@ -85,9 +85,8 @@ gulp.task('images', function(done) {
 
 
 // clean out dist folder
-gulp.task('clean', function(done) {
-	del(['./dist/**']); // clean dist folder and tell gulp you're done
-	done();
+gulp.task('clean', function() {
+	return del(['./dist/**']); // clean dist folder and tell gulp you're done
 });
 
 
