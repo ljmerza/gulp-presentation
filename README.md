@@ -2,9 +2,16 @@ gulp presentation
 
 install nodejs
 install bower and gulp
-		npm install -g bower gulp-cli
+
+```
+npm install -g bower gulp-cli
+```
 install npm modules
-		npm install
+```
+npm install
+```
 install bower modules
-		bower install
+```
+bower install
+```
 install browsersync extension/plugin for browser
