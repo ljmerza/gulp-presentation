@@ -11,6 +11,8 @@ var sourcemaps = require('gulp-sourcemaps'); // generate source maps of sass
 var notify = require('gulp-notify'); // notification messages
 var uglify = require('gulp-uglify'); // minify js
 var babel = require('gulp-babel'); // js complier
+var del = require('del'); // delete dist files
+var inject = require('gulp-inject'); // inject css/js links into html
  
 
 // Browser-sync task
@@ -24,8 +26,13 @@ gulp.task('browser-sync', function() {
 
 // HTML tasks
 gulp.task('html', function() {
-    return gulp.src('./src/*.html') // get all html files
-    .pipe(plumber()) // hide errors
+	var sources = gulp.src(['./dist/*.js', './dist/*.css'], {read: false}); // get injection sources
+	var target = gulp.src('./src/*.html') // get all html files
+
+	return target
+	// .pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")})) // capture errors
+
+    .pipe(inject(sources, {ignorePath: 'dist/'})) // inject css/js files into html - drop dist/ path from links
     .pipe(gulp.dest('./dist')) // move then to dist folder
     .pipe(browserSync.reload({stream: true})) // reload browser
     .pipe(notify({ message: 'html build done' }));
@@ -33,50 +40,65 @@ gulp.task('html', function() {
 
 // css tasks
 gulp.task('css', function() {
-	var cssStream = gulp.src('./src/styles/css/*.css'); // get all css files
-	var sassStream = gulp.src('./src/styles/sass/*.sass') // get all sass files
+	var cssStream = gulp.src('./src/styles/css/**/*.css'); // get all css files
+	var sassStream = gulp.src('./src/styles/sass/**/*.sass') // get all sass files
+		// .pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")})) // capture errors
 		.pipe(sass().on('error', sass.logError)); 	// to combine sass and css we need to convert sass to css first
 
     return merge(sassStream, cssStream)
-    	.pipe(plumber()) // hide errors
+    	// .pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")})) // capture errors
     	.pipe(sourcemaps.init()) // start source maps
     	.pipe(concat('style.css')) // put them all together in one file called s // add browser prefixestyle.css
     	.pipe(autoprefixer('last 2 versions')) // add browser prefixes
     	.pipe(cssnano()) // minify file
-    	.pipe(sourcemaps.write('./dist/')) // generate source maps
-    	.pipe(gulp.dest('./dist/')) // add to dist folder
+    	.pipe(sourcemaps.write('./')) // generate source maps
+    	.pipe(gulp.dest('./dist')) // add to dist folder
     	.pipe(browserSync.reload({stream:true})) // reload browser
-    	.pipe(notify({ message: 'css build done' }));
+    	.pipe(notify({ message: 'CSS build done.' }));
 
 });
 
-
-//Javascript tasks
+// Javascript tasks
 gulp.task('javascript', function() {
     return gulp.src([
         './bower_components/jquery/dist/jquery.min.js',
-        './src/scripts/*.js'
+        './src/scripts/**/*.js'
         ])
-    .pipe(plumber())
+    // .pipe(plumber({errorHandler: notify.onError("Error: <%= error.message %>")}))  // capture errors
     .pipe(sourcemaps.init())
     .pipe(babel({
-        presets: ['es2015'],
-        plugins: ['transform-runtime']
+        presets: ['es2015']
     }))
     .pipe(concat('script.js'))
     .pipe(uglify())
-    .pipe(sourcemaps.write('./dist/'))
-    .pipe(gulp.dest('./dist/'))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest('./dist'))
     .pipe(browserSync.reload({stream:true}))
-    .pipe(notify({ message: 'javascript build done' }))
+    .pipe(notify({ message: 'Javascript build done.' }));
 });
 
 
+// images tasks
+gulp.task('images', function(done) {
+	done();
+});
 
-// Watch tasks
-gulp.watch('./src/*.html', ['html']); // watch all html files in this folder - changes trigger html task
-gulp.watch('./src/styles/**/*.*', ['css']); // watch all files in all folders this folder - changes trigger css task
+
+// clean out dist folder
+gulp.task('clean', function(done) {
+	del(['./dist/**']); // clean dist folder and tell gulp you're done
+	done();
+});
+
+
+// watch task
+gulp.task('watch', function() {
+	gulp.watch('./src/*.html', gulp.series('html')); // watch all html files in this folder - changes trigger html task
+	gulp.watch('./src/styles/**/*.*', gulp.series('css')); // watch all files in all folders this folder - changes trigger css task
+	gulp.watch('./src/javascript/**/*.js', gulp.series('javascript')); // watch all files in all folders this folder - changes trigger javascript task
+	gulp.watch('./src/images/**/*.*', gulp.series('images')); // watch all files in all folders this folder - changes trigger images task
+});
 
 
 // task to run on start up - run each task then run browser synv
-gulp.task('default', ['html', 'css', 'browser-sync']);
+gulp.task('default', gulp.series('clean', gulp.parallel('css', 'javascript', 'images'), 'html', gulp.parallel('browser-sync', 'watch')));

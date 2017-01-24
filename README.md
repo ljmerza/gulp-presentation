@@ -2,7 +2,7 @@ gulp presentation
 
 install nodejs
 install bower and gulp
-		npm install -g bower gulp
+		npm install -g bower gulp-cli
 install npm modules
 		npm install
 install bower modules
