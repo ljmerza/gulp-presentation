@@ -14,4 +14,4 @@ install bower modules
 ```
 bower install
 ```
-install browsersync extension/plugin for browser
+install browsersync extension/plugin for your browser
